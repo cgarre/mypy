@@ -2,6 +2,7 @@ import requests
 import json
 import sys
 from time import sleep
+import os
 
 #format 
 # bearer, Bearer xxxxxxxxx
@@ -25,7 +26,9 @@ def getSecondPart(line):
 # input in_file 
 # output  bearer, messagelist, filelist
 def parseFile(in_file):
-    bearer_token = ""
+    bearer_token = os.environ.get("ybt")
+    if(len(bearer_token) == 0):
+        print("bearer not set in env, using from file if it is set")
     msgs = []
     files = []
     with open(in_file, "r") as inputfile:
@@ -67,12 +70,12 @@ def del_and_validate_msg(bearertoken, messages):
         if(resp.ok):
             print(resp.content)
             print("> Deleting "+msg_id)
-            sleep(0.5)
+            sleep(1)
             resp_d = requests.delete(url,headers=headers)
 
             if(resp_d.ok):
                 print("> Testing if message "+msg_id+" exists")
-                sleep(0.5)
+                sleep(1)
                 resp_d_val = requests.get(url,headers=headers)
 
                 if(resp_d_val.ok):
@@ -103,12 +106,12 @@ def del_and_validate_file(bearertoken, files):
         if(resp.ok):
             print(resp.content)
             print("> Deleting "+file_id)
-            sleep(0.5)
+            sleep(1)
             resp_d = requests.delete(url,headers=headers)
 
             if(resp_d.ok):
                 print("> Testing if file "+file_id+" exists")
-                sleep(0.5)
+                sleep(1)
                 resp_d_val = requests.get(url,headers=headers)
 
                 if(resp_d_val.ok):
@@ -132,11 +135,10 @@ def load(fil,out):
     outstr = del_and_validate_msg(bt,msgs)
     outstr = outstr + "\n" + del_and_validate_file(bt,files)
     outfile = open(out,"w+")
-    outfile.write("run at //time here")
-    outfile.write("bearer,"+str(bt)+"\n")
+    outfile.write("run at //time here\n")
     outfile.write(outstr)
     outfile.flush()
-    outfile.close()    
+    outfile.close()
 
 def main():
     if len(sys.argv) < 3:
